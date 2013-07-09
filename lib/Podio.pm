@@ -4,9 +4,12 @@ use 5.006;
 use strict;
 use warnings;
 
+use JSON;
+use REST::Client;
+
 =head1 NAME
 
-Podio - The great new Podio!
+Podio - A simple library to intercat with Podio's API
 
 =head1 VERSION
 
@@ -16,6 +19,8 @@ Version 0.01
 
 our $VERSION = '0.01';
 
+my $json;
+my $client;
 
 =head1 SYNOPSIS
 
@@ -28,26 +33,99 @@ Perhaps a little code snippet.
     my $foo = Podio->new();
     ...
 
-=head1 EXPORT
-
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
-
 =head1 SUBROUTINES/METHODS
 
-=head2 function1
+=head2 new()
+
+Initialize the class
 
 =cut
 
-sub function1 {
+sub new {
+    my $class = shift;
+    my $self = {};
+
+    $json = JSON->new->allow_nonref;
+    $client = REST::Client->new();
+    $client->setHost( 'https://api.podio.com' );
+
+    bless $self, $class;
+
+    return $self;
+
 }
 
-=head2 function2
+
+=head2 setup()
+
+Setup the base authentication configuration
 
 =cut
+sub setup {
+    my ($self, %conf) = @_;
+    
+    $self->{'api_key'} = $conf{'api_key'};
+    $self->{'api_secret'} = $conf{'api_secret'};
 
-sub function2 {
+    return;
 }
+
+
+
+=head2 authenticateWithAuthCode()
+
+=cut
+sub authenticateWithAuthCode {
+
+}
+
+
+=head2 authenticateWithApp()
+
+=cut
+sub authenticateWithApp {
+    my ($self, %conf) = @_;
+
+    $self->{'app_id'} = $conf{'app_id'};
+    $self->{'app_token'} = $conf{'app_token'};
+    $self->{'redirect_uri'} = $conf{'redirect_uri'};
+
+    my $headers = {'Content_Type' => 'application/json', 'Accept' => 'application/json'};
+
+    my $data = $client->buildQuery(
+        'grant_type'    => 'app',
+        'app_id'        => $self->{'app_id'},
+        'app_token'     => $self->{'app_token'},
+        'client_id'     => $self->{'api_key'},
+        'client_secret' => $self->{'api_secret'},
+        'redirect_uri'  => $self->{'redirect_uri'},
+    );
+        
+
+    $client->POST('/oauth/token' . $data, ('', $headers));
+    my %respData = %{ $json->decode( $client->responseContent() ) };
+    if (exists($respData{'access_token'})) {
+         $self->{'access_token'} = $respData{'access_token'};
+
+        return $respData{'access_token'};
+    }
+
+    return '';
+
+
+}
+
+
+=head2 authenticateWithCredentials()
+
+=cut
+sub authenticateWithCredentials {
+
+}
+
+
+
+
 
 =head1 AUTHOR
 
@@ -58,7 +136,6 @@ Massimo Forni, C<< <forni.massimo at gmail.com> >>
 Please report any bugs or feature requests to C<bug-podio at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Podio>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
 
 
 
