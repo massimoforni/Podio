@@ -60,6 +60,7 @@ sub new {
 
 Setup the base authentication configuration
 
+
 =cut
 sub setup {
     my ($self, %conf) = @_;
@@ -74,6 +75,9 @@ sub setup {
 
 =head2 authenticateWithAuthCode()
 
+NOT IMPLEMENTED YET
+
+
 =cut
 sub authenticateWithAuthCode {
 
@@ -81,6 +85,11 @@ sub authenticateWithAuthCode {
 
 
 =head2 authenticateWithApp()
+
+Authenticate with the "App Authentication Flow"
+
+Return the access token if successful
+
 
 =cut
 sub authenticateWithApp {
@@ -117,6 +126,9 @@ sub authenticateWithApp {
 
 
 =head2 authenticateWithCredentials()
+
+NOT IMPLEMENTED YET
+
 
 =cut
 sub authenticateWithCredentials {
